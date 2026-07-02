@@ -1,0 +1,46 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: backend
+    ports:
+      - "8080:8080"
+    mem_limit: 128m  
+    depends_on:
+      - primary-api
+      - secondary-api
+      - toxiproxy
+
+  primary-api:
+    build:
+      context: .
+      dockerfile: primary-api/Dockerfile
+    container_name: primary-api
+    ports:
+      - "8081:8081"
+
+  secondary-api:
+    build:
+      context: .
+      dockerfile: secondary-api/Dockerfile
+    container_name: secondary-api
+    ports:
+      - "8082:8082"
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
+
+  toxiproxy:
+    image: shopify/toxiproxy
+    container_name: toxiproxy
+    ports:
+      - "8474:8474"
+      - "8666:8666"
