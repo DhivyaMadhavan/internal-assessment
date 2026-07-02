@@ -16,17 +16,36 @@ The frontend provides a real-time monitoring dashboard displaying circuit breake
 # Architecture
 
 ```
-                    Client
-                       │
-                       ▼
-            Backend Reverse Proxy
-                       │
-          ┌────────────┴────────────┐
-          │                         │
-          ▼                         ▼
-     Primary API             Secondary API
-          │
-     (through Toxiproxy)
+                Browser / Postman
+                        │
+                        ▼
+                  Go Backend
+                        │
+                 helloHandler()
+                        │
+                 proxyRequest()
+                        │
+                Circuit Breaker
+                 │            │
+          Allowed        Not Allowed
+             │                │
+             ▼                ▼
+        Toxiproxy       Secondary API
+             │
+             ▼
+        Primary API
+             │
+     Success / Failure
+             │
+             ▼
+        Update Metrics
+             │
+             ▼
+        WebSocket
+             │
+             ▼
+     Frontend Dashboard
+
 ```
 
 ---
