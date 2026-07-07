@@ -291,13 +291,6 @@ Run once after starting the containers.
 
 PowerShell:
 
-```powershell
-Invoke-RestMethod -Method Post `
--Uri "http://localhost:8474/proxies" `
--ContentType "application/json" `
--Headers @{"User-Agent"="PowerShell"} `
--Body '{"name":"primary","listen":"0.0.0.0:8666","upstream":"primary-api:8081","enabled":true}'
-```
 
 ---
 
