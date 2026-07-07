@@ -7,6 +7,11 @@ import (
 
 func main() {
 
+	metrics.StartRPSCounter(func() {
+        broadcastMetrics()
+    })
+
+
 	http.HandleFunc("/hello", helloHandler)
 	http.HandleFunc("/ws", wsHandler)
 

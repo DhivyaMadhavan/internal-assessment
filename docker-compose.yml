@@ -44,3 +44,17 @@ services:
     ports:
       - "8474:8474"
       - "8666:8666"
+
+  toxiproxy-setup:
+      image: curlimages/curl
+      depends_on:
+        - toxiproxy
+      entrypoint: >
+        sh -c "
+        sleep 2 &&
+        echo 'Creating Toxiproxy mapping...' &&
+        curl -X POST http://toxiproxy:8474/proxies \
+        -H 'Content-Type: application/json' \
+        -d '{\"name\":\"primary\",\"listen\":\"0.0.0.0:8666\",\"upstream\":\"primary-api:8081\",\"enabled\":true}' &&
+        echo 'Toxiproxy setup complete'
+        "      

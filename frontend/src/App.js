@@ -11,6 +11,7 @@ function App() {
 
     const [data, setData] = useState({
         requestCount: 0,
+        rps: 0,
         route: "Primary",
         circuitState: "CLOSED"
     });
@@ -23,10 +24,14 @@ function App() {
         const ws = new WebSocket("ws://localhost:8080/ws");
 
         ws.onmessage = (event) => {
+            console.log("Received:", event.data);
 
             const msg = JSON.parse(event.data);
+            const safeRps = Number(msg.rps ?? 0);
 
-            // Update transition log and latest metrics
+            const timestamp = Date.now();
+
+            // MAIN STATE UPDATE
             setData(prev => {
 
                 if (prev.circuitState !== msg.circuitState) {
@@ -34,39 +39,31 @@ function App() {
                     const now = new Date().toLocaleTimeString();
 
                     setTransitionLog(old => [
-
                         `${now} : ${prev.circuitState} → ${msg.circuitState}`,
-
                         ...old.slice(0, 9)
-
                     ]);
-
                 }
 
-                return msg;
-
+                return {
+                    ...msg,
+                    rps: safeRps
+                };
             });
 
-            // Update graph
-            const now = new Date().toLocaleTimeString();
+           
 
+            // GRAPH UPDATE (more stable for Recharts tooltip)
             setGraphData(old => {
 
                 const updated = [
                     ...old,
                     {
-                        time: now,
-                        requests: msg.requestCount
+                        time: timestamp,   // 🔥 important fix
+                        rps: safeRps
                     }
                 ];
 
-                // Keep only last 20 data points
-                if (updated.length > 20) {
-                    updated.shift();
-                }
-
-                return updated;
-
+                return updated.slice(-20);
             });
 
         };
@@ -79,8 +76,11 @@ function App() {
 
     }, []);
 
-    return (
+    useEffect(() => {
+                    console.log("graphData:", graphData);
+                }, [graphData]);
 
+    return (
         <div className="container">
 
             <Header />
@@ -89,7 +89,10 @@ function App() {
 
                 <CircuitPanel data={data} />
 
-                <MetricsPanel graphData={graphData} />
+                <MetricsPanel
+                    graphData={graphData}
+                    currentRps={data.rps}
+                />
 
             </div>
 
@@ -98,9 +101,7 @@ function App() {
             <TransitionLog logs={transitionLog} />
 
         </div>
-
     );
-
 }
 
 export default App;
